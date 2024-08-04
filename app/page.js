@@ -4,6 +4,9 @@ import {useState, useEffect} from 'react'
 import { collection, doc, query, getDocs, getDoc, deleteDoc, setDoc } from "firebase/firestore";
 import { Typography, Box, Modal, Stack, TextField, Button } from "@mui/material";
 import { firestore } from "./firebase";
+import '../app/globals.css';
+import topBar from "./components/topBar";
+import TopContainer from "./components/topBar";
 
 export default function Home() {
   const [inventory, setInventory] = useState([])
@@ -59,15 +62,8 @@ export default function Home() {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   return (
-    <Box
-      width="100vw"
-      height="100vh"
-      display="flex"
-      flexDirection="column"
-      justifyContent="center"
-      alignItems="center"
-      gap={2}
-    >
+    <Box className="outer-box">
+      <TopContainer></TopContainer>
       <Modal open={open} onClose={handleClose}>
         <Box
           position="absolute"
@@ -108,7 +104,7 @@ export default function Home() {
       </Button>
       <Box border="1px solid #333" width="800px" height="100px">
         <Box bgcolor="#add" width="100%" height="100%">
-          <Typography>Inventory Management</Typography>
+          <Typography className="text-blue-500">Inventory Management</Typography>
         </Box>
       </Box>
       <Stack width="800px" height="300px" spacing={2} overflow="auto">
