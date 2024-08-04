@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Typography, Box, Modal, Stack, TextField, Button } from "@mui/material";
+import {Box} from "@mui/material";
 
 const TopContainer = ({ children, className }) => {
   return (
@@ -24,6 +24,7 @@ const TopContainer = ({ children, className }) => {
 
 TopContainer.propTypes = {
   children: PropTypes.node.isRequired,
+  className: PropTypes.node.isRequired
 };
 
 export default TopContainer;
