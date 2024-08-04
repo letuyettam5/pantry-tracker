@@ -2,9 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Typography, Box, Modal, Stack, TextField, Button } from "@mui/material";
 
-const TopContainer = ({ children }) => {
+const TopContainer = ({ children, className }) => {
   return (
     <Box
+    className={`grid ${className}`}
     sx={{
       position: 'sticky',
       top: 0,
@@ -16,7 +17,6 @@ const TopContainer = ({ children }) => {
       alignItems: 'center',
     }}
     >
-      
       {children}
     </Box>
   );

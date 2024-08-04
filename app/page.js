@@ -12,6 +12,9 @@ export default function Home() {
   const [open, setOpen] = useState(false)
   const [itemName, setItemName] = useState("")
   const [totalItems, setTotalItems] = useState(0);
+  const [category, setCategory] = useState("")
+  const [filter, setFilter] = useState("");
+  const [filteredInventory, setFilteredInventory] = useState([]);
 
   const updateInventory = async () => {
     const snapshot = query(collection(firestore, 'inventory'))
@@ -24,8 +27,9 @@ export default function Home() {
       })
     })
     setInventory(inventoryList)
+    setFilteredInventory(inventoryList);
     // Calculate total items
-    const total = inventoryList.reduce((acc, item) => acc + (item.quantity || 0), 0);
+    const total = inventoryList.length;
     setTotalItems(total);
   }
 
@@ -44,49 +48,109 @@ export default function Home() {
     await updateInventory()
   }
 
-  const addItem = async (item) => {
-    const docRef = doc(collection(firestore, 'inventory'), item)
-    const docSnap = await getDoc(docRef)
-
+  const addItem = async (item, inputCategory) => {
+    if (!item || !inputCategory) return; // Prevent adding item with empty name or category
+  
+    const docRef = doc(collection(firestore, 'inventory'), item);
+    const docSnap = await getDoc(docRef);
+  
     if (docSnap.exists()) {
-      const {quantity} = docSnap.data()
-      await setDoc(docRef, {quantity: quantity + 1})
+      const { quantity, category } = docSnap.data();
+      await setDoc(docRef, { quantity: quantity + 1, category: category.toLowerCase() });
     } else {
-      await setDoc(docRef, {quantity: 1})
+      await setDoc(docRef, { quantity: 1, category: inputCategory.toLowerCase() });
     }
-    await updateInventory()
-  }
+    await updateInventory();
+  };
+  
 
   useEffect(() => {
     updateInventory()
   }, [])
 
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setItemName(''); // Reset item name
+    setCategory(''); // Reset item category
+  };
+
+  const filterItems = () => {
+    if (!filter) {
+      setFilteredInventory(inventory);
+    } else {
+      const lowerFilter = filter.toLowerCase();
+      const filtered = inventory.filter(item =>
+        (item.category && item.category.toLowerCase().includes(lowerFilter)) ||
+        (item.name && item.name.toLowerCase().includes(lowerFilter))
+      );
+      setFilteredInventory(filtered);
+    }
+  };
+
+  const resetFilter = () => {
+    setFilter(''); // Clear the filter text
+    setFilteredInventory(inventory); // Reset to show all items
+  };
+  
+  
+
   return (
     <Box className="outer-box">
-      <TopContainer className="grid grid-cols-3 gap-3">
-      <Box display='flex'
-      alignItems='center'
-      className='col-span-1'>
-        <Typography className="text-green-500 pl-11"
-          fontSize='40px'
+      <TopContainer className='grid grid-cols-3'>
+        <Box display='flex'
+        alignItems='center'
         >
-          Pantry Management
-        </Typography>
-      </Box>
-        <Box className='col-span-1'
-          display="flex"
-          flexDirection='column'
-          justifyContent='center'
-          alignItems='center'
-        >
-        <Typography>Total items: {totalItems}</Typography>
-        <Button variant="contained" onClick={handleOpen}>
-          Add New Item
-        </Button>
+          <Typography className="text-green-600 pl-10"
+            variant="h3"
+          >
+            Pantry Inventory
+          </Typography>
         </Box>
-        
+        <Box 
+            className='pl-5'
+            display="flex"
+            flexDirection='column'
+            justifyContent='center'
+            alignItems='center'
+          >
+          <Typography className="pb-5 text-gray-700" variant="h5">Total unique items: {totalItems}</Typography>
+          <Button variant="contained" className='bg-green-600' onClick={handleOpen}>
+            Add New Item
+          </Button>
+        </Box>
+        <Box className='flex flex-col items-center'>
+        <TextField
+            className=""
+            variant="outlined"
+            value={filter}
+            onChange={(e) => {
+              setFilter(e.target.value);
+            }}
+            placeholder="Filter by category or name"
+          />
+          <Box>
+          <Button
+              className="m-2"
+              variant="outlined"
+              onClick={() => {
+                filterItems();
+                handleClose();
+              }}
+            >
+              Filter
+          </Button>
+          <Button
+              variant="outlined"
+              onClick={() => {
+                resetFilter();
+                handleClose();
+              }}
+            >
+              Clear
+          </Button>
+          </Box>
+        </Box>
       </TopContainer>
       <Modal open={open} onClose={handleClose}>
         <Box
@@ -110,11 +174,19 @@ export default function Home() {
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
             />
+            <TextField
+              variant="outlined"
+              fullWidth
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="Category"
+            />
             <Button
               variant="outlined"
               onClick={() => {
-                addItem(itemName);
+                addItem(itemName.toLowerCase(), category);
                 setItemName('');
+                setCategory('');
                 handleClose();
               }}
             >
@@ -123,24 +195,26 @@ export default function Home() {
           </Stack>
         </Box>
       </Modal>
-      <Stack width="100vw" height="maxContent" spacing={2} overflow="auto">
-        {inventory.map(({ name, quantity }) => (
+      <Stack width="100vw" height="maxContent" overflow="auto">
+        {filteredInventory.map(({ name, category, quantity }) => (
           <Box
             key={name}
             width="100%"
-            minHeight="150px"
             display="flex"
             alignItems="center"
             justifyContent="center"
             bgcolor="#f0f0f0"
             spacing={1}
-            padding={5}
-            className='grid grid-cols-3'
+            padding={2}
+            className='grid grid-cols-4 odd:bg-white even:bg-slate-50'
           >
-            <Typography variant="h5" color="#333" textAlign='center'>
+            <Typography variant="h7" color="#333" textAlign='center'>
               {name.charAt(0).toUpperCase() + name.slice(1)}
             </Typography>
-            <Typography variant="h5" color="#333" textAlign="center">{quantity}</Typography>
+            <Typography variant="h7" color="#333" textAlign='center'>
+            {category ? category.charAt(0).toUpperCase() + category.slice(1) : 'No Category'}
+            </Typography>
+            <Typography variant="h7" color="#333" textAlign="center">{quantity}</Typography>
             <Button variant="contained" onClick={()=> removeItem(name)}>
               Remove
             </Button>
