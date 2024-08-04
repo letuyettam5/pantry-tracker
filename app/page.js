@@ -5,13 +5,13 @@ import { collection, doc, query, getDocs, getDoc, deleteDoc, setDoc } from "fire
 import { Typography, Box, Modal, Stack, TextField, Button } from "@mui/material";
 import { firestore } from "./firebase";
 import '../app/globals.css';
-import topBar from "./components/topBar";
 import TopContainer from "./components/topBar";
 
 export default function Home() {
   const [inventory, setInventory] = useState([])
   const [open, setOpen] = useState(false)
   const [itemName, setItemName] = useState("")
+  const [totalItems, setTotalItems] = useState(0);
 
   const updateInventory = async () => {
     const snapshot = query(collection(firestore, 'inventory'))
@@ -24,7 +24,9 @@ export default function Home() {
       })
     })
     setInventory(inventoryList)
-    console.log(inventoryList)
+    // Calculate total items
+    const total = inventoryList.reduce((acc, item) => acc + (item.quantity || 0), 0);
+    setTotalItems(total);
   }
 
   const removeItem = async (item) => {
@@ -63,7 +65,29 @@ export default function Home() {
   const handleClose = () => setOpen(false);
   return (
     <Box className="outer-box">
-      <TopContainer></TopContainer>
+      <TopContainer className="grid grid-cols-3 gap-3">
+      <Box display='flex'
+      alignItems='center'
+      className='col-span-1'>
+        <Typography className="text-green-500 pl-11"
+          fontSize='40px'
+        >
+          Pantry Management
+        </Typography>
+      </Box>
+        <Box className='col-span-1'
+          display="flex"
+          flexDirection='column'
+          justifyContent='center'
+          alignItems='center'
+        >
+        <Typography>Total items: {totalItems}</Typography>
+        <Button variant="contained" onClick={handleOpen}>
+          Add New Item
+        </Button>
+        </Box>
+        
+      </TopContainer>
       <Modal open={open} onClose={handleClose}>
         <Box
           position="absolute"
@@ -99,15 +123,7 @@ export default function Home() {
           </Stack>
         </Box>
       </Modal>
-      <Button variant="contained" onClick={handleOpen}>
-        Add New Item
-      </Button>
-      <Box border="1px solid #333" width="800px" height="100px">
-        <Box bgcolor="#add" width="100%" height="100%">
-          <Typography className="text-blue-500">Inventory Management</Typography>
-        </Box>
-      </Box>
-      <Stack width="800px" height="300px" spacing={2} overflow="auto">
+      <Stack width="100vw" height="maxContent" spacing={2} overflow="auto">
         {inventory.map(({ name, quantity }) => (
           <Box
             key={name}
@@ -117,13 +133,14 @@ export default function Home() {
             alignItems="center"
             justifyContent="center"
             bgcolor="#f0f0f0"
-            spacing={2}
+            spacing={1}
             padding={5}
+            className='grid grid-cols-3'
           >
-            <Typography variant="h3" color="#333" textAlign="left">
+            <Typography variant="h5" color="#333" textAlign='center'>
               {name.charAt(0).toUpperCase() + name.slice(1)}
             </Typography>
-            <Typography variant="h3" color="#333" textAlign="center">{quantity}</Typography>
+            <Typography variant="h5" color="#333" textAlign="center">{quantity}</Typography>
             <Button variant="contained" onClick={()=> removeItem(name)}>
               Remove
             </Button>
