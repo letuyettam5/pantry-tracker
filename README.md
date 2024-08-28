@@ -1,7 +1,7 @@
 # Pantry Tracker
 Welcome to Pantry Tracker! Try it out: https://pantry-tracker-ten-peach.vercel.app/
 
-![]()
+![](https://github.com/letuyettam5/pantry-tracker/blob/main/public/pantrytracker.png)
 
 ## Getting Started
 
