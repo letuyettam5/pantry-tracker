@@ -1,4 +1,7 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Pantry Tracker
+Welcome to Pantry Tracker! Try it out: https://pantry-tracker-ten-peach.vercel.app/
+
+![]()
 
 ## Getting Started
 
